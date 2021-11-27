@@ -1,20 +1,37 @@
 <template>
   <div class="city_body">
     <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="data in cotyHotList" :key="data.id">{{ data.nm }}</li>
-        </ul>
-      </div>
-      <div class="city_sort" ref="city_sort">
-        <div v-for="(value, key) in cityList" :key="key">
-          <h2>{{ key }}</h2>
-          <ul>
-            <li v-for="item in value" :key="item.id">{{ item.nm }}</li>
-          </ul>
+      <Loading v-if="isLoading" />
+      <Scroller v-else ref="city_List">
+        <div>
+          <div class="city_hot">
+            <h2>热门城市</h2>
+            <ul class="clearfix">
+              <li
+                v-for="data in cotyHotList"
+                :key="data.id"
+                @tap="handleToCity(data.nm, data.id)"
+              >
+                {{ data.nm }}
+              </li>
+            </ul>
+          </div>
+          <div class="city_sort" ref="city_sort">
+            <div v-for="(value, key) in cityList" :key="key">
+              <h2>{{ key }}</h2>
+              <ul>
+                <li
+                  v-for="item in value"
+                  :key="item.id"
+                  @tap="handleToCity(item.nm, item.id)"
+                >
+                  {{ item.nm }}
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
+      </Scroller>
     </div>
     <div class="city_index">
       <ul>
@@ -30,6 +47,7 @@
   </div>
 </template>
 <script>
+import Scroller from '../Scroller/index.vue'
 export default {
   name: 'City',
   data() {
@@ -37,45 +55,60 @@ export default {
       cityList: [],
       cotyHotList: [],
       cityIndex: [],
+      isLoading: true,
     }
   },
   mounted() {
-    this.axios.get('/City.json').then((res) => {
-      // console.log(res.data.letterMap)
-      this.cityList = res.data.letterMap
-      var hotCity = res.data.letterMap
-      var { cityIndex, cotyHotList } = this.handleCity(hotCity)
-      this.cotyHotList = cotyHotList
-      this.cityIndex = cityIndex
-      // console.log(cotyHotList)
-      // console.log(cityIndex)
-      // console.log(this.hotCity)
-    })
-  },
+    var cityIndex = window.localStorage.getItem('cityIndex')
+    var cotyHotList = window.localStorage.getItem('cotyHotList')
+    var cityList = window.localStorage.getItem('cityList')
 
+    if (cotyHotList && cotyHotList && cityList) {
+      this.cityList = JSON.parse(cityList)
+      this.cityIndex = JSON.parse(cityIndex)
+      this.cotyHotList = JSON.parse(cotyHotList)
+      this.isLoading = false
+      // console.log(this.cityList['A'][0].nm)
+      // console.log(this.cotyHotList[0].nm)
+    } else {
+      this.axios.get('/City.json').then((res) => {
+        // console.log(res.data.letterMap)
+        var cityList = res.data.letterMap
+        this.cityList = cityList
+        var hotCity = res.data.letterMap
+        var { cityIndex, cotyHotList } = this.handleCity(hotCity)
+        this.cotyHotList = cotyHotList
+        this.cityIndex = cityIndex
+        this.isLoading = false
+        console.log(this.cityList['A'][0])
+
+        window.localStorage.setItem('cityIndex', JSON.stringify(cityIndex))
+        window.localStorage.setItem('cotyHotList', JSON.stringify(cotyHotList))
+        window.localStorage.setItem('cityList', JSON.stringify(cityList))
+
+        // console.log(cityLists)
+      })
+    }
+  },
   methods: {
     handleCity(hotCity) {
-      console.log(hotCity)
+      // console.log(hotCity)
       var letterAll = []
       var cotyHotList = []
       var cityIndex = []
-
       for (var key in hotCity) {
         cityIndex.push(key)
       }
       // console.log(cityIndex)
-
       for (var key in hotCity) {
         letterAll.push(hotCity[key])
       }
       var cityLists = Array.prototype.concat.apply([], letterAll) //将二维数组转成一维数组
-
       for (var i = 0; i < cityLists.length; i++) {
         if (cityLists[i].rank === 'A') {
           cotyHotList.push(cityLists[i])
         }
       }
-
       return {
         cityIndex,
         cotyHotList,
@@ -84,10 +117,18 @@ export default {
     handleToIndex(index) {
       // console.log(index)
       var h2 = this.$refs.city_sort.getElementsByTagName('h2')
-      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+      // this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+      this.$refs.city_List.toScrollTop(-h2[index].offsetTop)
       // console.log(h2[1])
     },
+    handleToCity(nm, id) {
+      this.$store.commit('city/CITY_INFO', { nm, id })
+      window.localStorage.setItem('nowNm', nm)
+      window.localStorage.setItem('nowId', id)
+      this.$router.push('/movie/nowPlaying')
+    },
   },
+  components: { Scroller },
 }
 </script>
 

@@ -1,7 +1,13 @@
 <template>
-  <div class="movie_body">
-    <ul>
-      <!-- <li>
+  <div class="movie_body" ref="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller
+      v-else
+      :handleToScroll="handleToScroll"
+      :handleToTouchEnd="handleToTouchEnd"
+    >
+      <ul>
+        <!-- <li>
         <div class="pic_show"><img src="/images/movie_1.jpg" /></div>
         <div class="info_list">
           <h2>无名之辈</h2>
@@ -11,42 +17,85 @@
         </div>
         <div class="btn_mall">购票</div>
       </li> -->
-      <li v-for="item in movieList" :key="item.id">
-        <div class="pic_show"><img :src="item.img | setWH('128.180')" /></div>
-        <div class="info_list">
-          <h2>
-            {{ item.nm }}
-            <img
-              v-if="item.version === 'v3d imax'"
-              src="@/assets/maxs3D.png"
-              alt=""
-            />
-          </h2>
-          <p>
-            观众评分：<span class="grade">{{ item.sc }}</span>
-          </p>
-          <p>主演：{{ item.star }}</p>
-          <p>{{ item.showInfo }}</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-    </ul>
+        <li class="pullDown">{{ pullDownMsg }}</li>
+        <li v-for="item in movieList" :key="item.id">
+          <div class="pic_show" @tap="handleToDetail">
+            <img :src="item.img | setWH('128.180')" />
+          </div>
+          <div class="info_list">
+            <h2>
+              {{ item.nm }}
+              <img
+                v-if="item.version === 'v3d imax'"
+                src="@/assets/maxs3D.png"
+                alt=""
+              />
+            </h2>
+            <p>
+              观众评分：<span class="grade">{{ item.sc }}</span>
+            </p>
+            <p>主演：{{ item.star }}</p>
+            <p>{{ item.showInfo }}</p>
+          </div>
+          <div class="btn_mall">购票</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 <script>
+import Scroller from '../Scroller/index.vue'
+import Loading from '../Loading/index.vue'
+
 export default {
   name: 'Nowplaying',
   data() {
     return {
       movieList: [],
+      pullDownMsg: '',
+      isLoading: true,
+      prevCityId: -1,
     }
   },
-  mounted() {
+  activated() {
+    var cityId = this.$store.state.city.id
+
+    if (this.prevCityId === cityId) {
+      console.log('相同并没有切换城市')
+      return
+    }
+    this.isLoading = true
     this.axios.get('/ajax/movieOnInfoList ').then((res) => {
       // console.log(res.data.movieList)
       this.movieList = res.data.movieList
+      this.isLoading = false
+      this.prevCityId = cityId
+      console.log(cityId)
     })
   },
+  methods: {
+    handleToDetail(movieId) {
+      console.log('movieId')
+      // this.$router.push('/movie/detail/1/' + movieId)
+    },
+    handleToScroll(pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = '正在更新中'
+      }
+    },
+    handleToTouchEnd(pos) {
+      if (pos.y > 30) {
+        this.axios.get('/ajax/movieOnInfoList ').then((res) => {
+          this.movieList = res.data.movieList
+          this.pullDownMsg = '更新成功'
+          setTimeout(() => {
+            this.pullDownMsg = ''
+          }, 1000)
+        })
+      }
+    },
+  },
+  components: { Scroller, Loading },
 }
 </script>
 
@@ -120,5 +169,11 @@ export default {
 }
 .movie_body .btn_pre {
   background-color: #3c9fe6;
+}
+
+.movie_body .pullDown {
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 </style>

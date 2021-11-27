@@ -1,34 +1,45 @@
 <template>
   <div class="cinema_body">
-    <ul>
-      <li v-for="item in cinemaList" :key="item.cinemaId">
-        <div>
-          <span>{{ item.name }}</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>{{ item.address }}</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <li v-for="item in cinemaList" :key="item.cinemaId">
+          <div>
+            <span>{{ item.name }}</span>
+            <span class="q"><span class="price">22.9</span> 元起</span>
+          </div>
+          <div class="address">
+            <span>{{ item.address }}</span>
+            <span>1763.5km</span>
+          </div>
+          <div class="card">
+            <div>小吃</div>
+            <div>折扣卡</div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 <script>
+import Scroller from '../Scroller/index.vue'
 export default {
   name: 'CiList',
   data() {
     return {
       cinemaList: [],
+      isLoading: true,
+      preCityId: -1,
     }
   },
   mounted() {
+    var cityId = this.$store.state.city.id
+    if (this.preCityId === cityId) {
+      return
+    }
+    this.isLoading = true
     this.axios({
-      url: 'https://m.maizuo.com/gateway?cityId=210200&ticketFlag=1&k=6800616',
+      url: `https://m.maizuo.com/gateway?cityId=210200&ticketFlag=1&k=6800616`,
       headers: {
         'X-Client-Info':
           '{"a":"3000","ch":"1002","v":"5.0.4","e":"15610855429195524981146"}',
@@ -37,8 +48,11 @@ export default {
     }).then((res) => {
       console.log(res.data.data.cinemas)
       this.cinemaList = res.data.data.cinemas
+      this.isLoading = false
+      this.preCityId = cityId
     })
   },
+  components: { Scroller },
 }
 </script>
 <style scoped>
