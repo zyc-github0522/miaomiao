@@ -9,7 +9,8 @@
           class="city_name"
           active-class="active"
         >
-          <span>大连</span><i class="iconfont icon-lower-triangle"></i>
+          <span>{{ $store.state.city.nm }}</span
+          ><i class="iconfont icon-lower-triangle"></i>
         </router-link>
         <div class="hot_swtich">
           <router-link
@@ -47,11 +48,27 @@
 <script>
 import Header from '@/components/Header'
 import TabBar from '@/components/TabBar'
+import { messageBox } from '@/components/JS'
+
 export default {
   name: 'Movie',
   components: {
     Header,
     TabBar,
+  },
+  mounted() {
+    messageBox({
+      title: '定位',
+      content: '贵阳',
+      cancel: '取消',
+      ok: '切换定位',
+      handleCancel() {
+        console.log(1)
+      },
+      handleOk() {
+        console.log(2)
+      },
+    })
   },
 }
 </script>

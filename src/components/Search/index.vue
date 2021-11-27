@@ -45,8 +45,9 @@ export default {
     massage(newVal) {
       // console.log(newVal)
       var that = this
+      var cityId = this.$store.state.city.id
       this.cancelRequest()
-      this.axios(`/apollo/ajax/search?kw=${newVal}&cityId=10`, {
+      this.axios(`/apollo/ajax/search?kw=${newVal}&cityId=${cityId}`, {
         cancelToken: new this.axios.CancelToken(function (c) {
           that.source = c
         }),

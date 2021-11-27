@@ -1,44 +1,59 @@
 <template>
   <div class="movie_body">
-    <ul>
-      <li v-for="item in comingList" :key="item.id">
-        <div class="pic_show">
-          <img :src="item.img | setWH('120.180')" />
-        </div>
-        <div class="info_list">
-          <h2>
-            {{ item.nm }}
-            <img
-              v-if="item.version === 'v3d imax'"
-              src="@/assets/maxs3D.png"
-              alt=""
-            />
-          </h2>
-          <p>
-            <span class="person">{{ item.wish }}</span> 人想看
-          </p>
-          <p>主演：{{ item.star }}</p>
-          <p>{{ item.rt }}上映</p>
-        </div>
-        <div class="btn_pre">预售</div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <li v-for="item in comingList" :key="item.id">
+          <div class="pic_show">
+            <img :src="item.img | setWH('120.180')" />
+          </div>
+          <div class="info_list">
+            <h2>
+              {{ item.nm }}
+              <img
+                v-if="item.version === 'v3d imax'"
+                src="@/assets/maxs3D.png"
+                alt=""
+              />
+            </h2>
+            <p>
+              <span class="person">{{ item.wish }}</span> 人想看
+            </p>
+            <p>主演：{{ item.star }}</p>
+            <p>{{ item.rt }}上映</p>
+          </div>
+          <div class="btn_pre">预售</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 <script>
+import Scroller from '../Scroller/index.vue'
 export default {
   name: 'ComingSoon',
   data() {
     return {
       comingList: [],
+      isLoading: true,
+      preCityId: -1,
     }
   },
   mounted() {
-    this.axios('/ajax/comingList?ci=10&token=&limit=10').then((res) => {
+    var cityId = this.$store.state.city.id
+    if (this.preCityId === cityId) {
+      return
+    }
+    this.isLoading = true
+
+    this.axios('/ajax/comingList?ci=10&token=&limit=' + cityId).then((res) => {
       console.log(res.data.coming)
       this.comingList = res.data.coming
+      this.isLoading = false
+      this.preCityId === cityId
     })
   },
+  components: { Scroller },
 }
 </script>
 
