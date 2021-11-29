@@ -42,6 +42,7 @@
       </keep-alive>
     </div>
     <TabBar />
+    <router-view name="detail" />
   </div>
 </template>
 
@@ -57,18 +58,19 @@ export default {
     TabBar,
   },
   mounted() {
-    messageBox({
-      title: '定位',
-      content: '贵阳',
-      cancel: '取消',
-      ok: '切换定位',
-      handleCancel() {
-        console.log(1)
-      },
-      handleOk() {
-        console.log(2)
-      },
-    })
+    //切换城市
+    // messageBox({
+    //   title: '定位',
+    //   content: '贵阳',
+    //   cancel: '取消',
+    //   ok: '切换定位',
+    //   handleCancel() {
+    //     console.log(1)
+    //   },
+    //   handleOk() {
+    //     console.log(2)
+    //   },
+    // })
   },
 }
 </script>
